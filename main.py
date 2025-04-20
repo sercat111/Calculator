@@ -1,0 +1,216 @@
+import tkinter as tk
+import math
+import os
+
+memory = 0  # Переменная для хранения значения в памяти
+memory_buttons = {}  # Словарь для хранения кнопок памяти
+
+def update_memory_buttons():
+    """Обновляет состояние кнопок памяти в зависимости от значения memory"""
+    if memory == 0:
+        memory_buttons["MC"].config(bg="#D3D3D3", state='disabled')  # Серый и неактивный
+        memory_buttons["MR"].config(bg="#D3D3D3", state='disabled')  # Серый и неактивный
+    else:
+        memory_buttons["MC"].config(bg="#F8F9F8", state='normal')  # Нормальный цвет и активный
+        memory_buttons["MR"].config(bg="#F8F9F8", state='normal')  # Нормальный цвет и активный
+
+def set_custom_icon(root, icon_path):
+    """Устанавливает пользовательскую иконку для окна"""
+    try:
+        if os.name == 'nt':
+            root.iconbitmap(icon_path)
+        else:
+            img = tk.PhotoImage(file=icon_path)
+            root.tk.call('wm', 'iconphoto', root._w, img)
+    except Exception as e:
+        print(f"Не удалось загрузить иконку: {e}")
+
+def on_button_click(value):
+    global memory
+    current_text = entry.get()
+
+    if current_text == "Ошибка":
+        entry.delete(0, tk.END)
+        current_text = ""
+
+    if value == "=":
+        try:
+            if any(char.isdigit() for char in current_text):
+                result = eval(current_text)
+                entry.delete(0, tk.END)
+                entry.insert(tk.END, str(result))
+            else:
+                entry.delete(0, tk.END)
+                entry.insert(tk.END, "Ошибка")
+        except Exception as e:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, "Ошибка")
+    elif value == "C":
+        entry.delete(0, tk.END)
+    elif value == "CE":
+        entry.delete(0, tk.END)
+    elif value == "⌫":
+        if current_text != "Ошибка":
+            entry.delete(len(current_text) - 1, tk.END)
+    elif value == "+/-":
+        try:
+            current_value = float(current_text)
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, str(-current_value))
+        except:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, "Ошибка")
+    elif value == "√x":
+        try:
+            current_value = float(current_text)
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, str(math.sqrt(current_value)))
+        except:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, "Ошибка")
+    elif value == "x²":
+        try:
+            current_value = float(current_text)
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, str(current_value ** 2))
+        except:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, "Ошибка")
+    elif value == "⅔π":
+        entry.delete(0, tk.END)
+        entry.insert(tk.END, str((2/3) * math.pi))
+    elif value == "%":
+        try:
+            current_value = float(current_text)
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, str(current_value / 100))
+        except:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, "Ошибка")
+    elif value == "MC":
+        memory = 0
+        update_memory_buttons()
+    elif value == "MR":
+        if memory != 0:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, str(memory))
+    elif value == "M+":
+        try:
+            memory += float(current_text)
+            update_memory_buttons()
+        except:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, "Ошибка")
+    elif value == "M-":
+        try:
+            memory -= float(current_text)
+            update_memory_buttons()
+        except:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, "Ошибка")
+    elif value == "MS":
+        try:
+            memory = float(current_text)
+            update_memory_buttons()
+        except:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, "Ошибка")
+    elif value == "Mv":
+        if memory != 0:
+            entry.delete(0, tk.END)
+            entry.insert(tk.END, str(memory))
+    else:
+        if value in ["+", "-", "*", "/", "="]:
+            if any(char.isdigit() for char in current_text):
+                entry.insert(tk.END, value)
+        else:
+            entry.insert(tk.END, value)
+
+def create_gradient(canvas, width, height, top_color, bottom_color):
+    """Создает градиентный фон на холсте."""
+    for i in range(height):
+        r = int((top_color[0] * (height - i) + bottom_color[0] * i) / height)
+        g = int((top_color[1] * (height - i) + bottom_color[1] * i) / height)
+        b = int((top_color[2] * (height - i) + bottom_color[2] * i) / height)
+        color = f"#{r:02x}{g:02x}{b:02x}"
+        canvas.create_line(0, i, width, i, fill=color)
+
+# Создаем основное окно
+root = tk.Tk()
+root.title("Калькулятор")
+root.geometry("325x500")
+root.resizable(False, False)
+
+# Устанавливаем пользовательскую иконку
+icon_path = 'calculator_icon.ico'
+set_custom_icon(root, icon_path)
+
+# Цвета для градиента
+top_color = (240, 244, 245)  # #F0F4F5
+bottom_color = (242, 244, 239)  # #F2F4EF
+
+# Создание холста для градиента
+canvas = tk.Canvas(root, width=325, height=500, highlightthickness=0)
+canvas.pack(fill="both", expand=True)
+
+# Отрисовка градиента
+create_gradient(canvas, 325, 500, top_color, bottom_color)
+
+label = tk.Label(root, text="Обычный", font="Arial 20 bold", bg="#F0F4F5", fg="#000000")
+label.pack(fill="x")
+
+# Поле ввода
+entry = tk.Entry(root, font="Arial 20 bold", bg="#F2F4EF", fg="#000000", bd=0,
+                justify="right", insertbackground="#000000")
+entry.pack(fill="x", padx=10, pady=10)
+
+frame = tk.Frame(root, bg="#F2F4EF")
+frame.pack(fill="both", expand=True)
+
+# Кнопки памяти
+memory_btn_names = ["MC", "MR", "M+", "M-", "MS", "Mv"]
+for i, btn_name in enumerate(memory_btn_names):
+    is_disabled = memory == 0 and btn_name in ["MC", "MR"]
+    btn = tk.Button(frame, text=btn_name, font="Arial 12",
+                   bg="#D3D3D3" if is_disabled else "#F8F9F8",
+                   fg="#000000", bd=0, width=4, height=2,
+                   state='disabled' if is_disabled else 'normal',
+                   command=lambda value=btn_name: on_button_click(value))
+    btn.grid(row=0, column=i, sticky="nsew", padx=2, pady=2)
+    memory_buttons[btn_name] = btn
+
+# Основные кнопки
+buttons = [
+    ("%", "CE", "C", "⌫"),
+    ("√x", "x²", "⅔π", "/"),
+    ("7", "8", "9", "*"),
+    ("4", "5", "6", "-"),
+    ("1", "2", "3", "+"),
+    ("+/-", "0", ".", "=")
+]
+
+button_colors = {
+    "%": "#F8F9F8", "CE": "#F8F9F8", "C": "#F8F9F8", "⌫": "#F8F9F8",
+    "√x": "#F8F9F8", "x²": "#F8F9F8", "⅔π": "#F8F9F8", "/": "#F8F9F8",
+    "*": "#F8F9F8", "-": "#F8F9F8", "+": "#F8F9F8", "=": "#F8F9F8",
+    "+/-": "#FFFFFF", "0": "#FFFFFF", ".": "#FFFFFF",
+    "7": "#FFFFFF", "8": "#FFFFFF", "9": "#FFFFFF",
+    "4": "#FFFFFF", "5": "#FFFFFF", "6": "#FFFFFF",
+    "1": "#FFFFFF", "2": "#FFFFFF", "3": "#FFFFFF"
+}
+
+for i, row in enumerate(buttons, start=1):
+    for j, button in enumerate(row):
+        btn = tk.Button(frame, text=button, font="Arial 15",
+                       bg=button_colors.get(button, "#FFFFFF"), fg="#000000",
+                       bd=0, width=4, height=2,
+                       command=lambda value=button: on_button_click(value))
+        btn.grid(row=i, column=j, sticky="nsew", padx=2, pady=2)
+
+# Настройка строк и столбцов
+for i in range(7):
+    frame.rowconfigure(i, weight=1)
+for j in range(4):
+    frame.columnconfigure(j, weight=1)
+
+root.mainloop()
